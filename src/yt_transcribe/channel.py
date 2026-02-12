@@ -26,11 +26,17 @@ def run_channel_mode(
 
     total_count = len(all_ids)
 
-    # Get channel name from first video
-    first_info = fetch_video_info(f"https://www.youtube.com/watch?v={all_ids[0]}")
-    channel_name = first_info.channel
+    # Get channel name from first available video
+    channel_name = ""
+    for vid in all_ids[:5]:
+        try:
+            first_info = fetch_video_info(f"https://www.youtube.com/watch?v={vid}")
+            channel_name = first_info.channel
+            break
+        except Exception:
+            continue
     ch_dir = sanitize(channel_name) or "unknown_channel"
-    log(f"Channel: {channel_name}")
+    log(f"Channel: {channel_name or ch_dir}")
 
     # Find already-transcribed video IDs
     done_ids = get_transcribed_ids(config.output_dir / ch_dir)

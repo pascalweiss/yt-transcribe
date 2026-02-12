@@ -50,6 +50,11 @@ def download_audio(url: str, output_dir: Path, basename: str, audio_format: str 
 
 def fetch_channel_video_ids(channel_url: str, min_seconds: int = 60) -> list[str]:
     """Fetch all video IDs from a channel, filtered by minimum duration."""
+    # Ensure we target the /videos tab to avoid live streams and playlists
+    url = channel_url.rstrip("/")
+    if not url.endswith("/videos"):
+        url += "/videos"
+
     opts = {
         "extract_flat": True,
         "quiet": True,
@@ -57,6 +62,10 @@ def fetch_channel_video_ids(channel_url: str, min_seconds: int = 60) -> list[str
         "match_filter": yt_dlp.utils.match_filter_func(f"duration>={min_seconds}"),
     }
     with yt_dlp.YoutubeDL(opts) as ydl:
-        info = ydl.extract_info(channel_url, download=False)
+        info = ydl.extract_info(url, download=False)
     entries = info.get("entries", []) if info else []
-    return [e["id"] for e in entries if e and "id" in e]
+    # Filter out non-video IDs (e.g. channel IDs starting with "UC")
+    return [
+        e["id"] for e in entries
+        if e and "id" in e and len(e["id"]) == 11 and not e["id"].startswith("UC")
+    ]
