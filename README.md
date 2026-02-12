@@ -4,16 +4,16 @@ Download and transcribe YouTube videos using [yt-dlp](https://github.com/yt-dlp/
 
 ## Install
 
-### Homebrew (macOS)
+### Homebrew (Apple Silicon Mac)
 
 ```bash
 brew install pascalweiss/tap/yt-transcribe
 ```
 
-### pip / uv
+### pipx / uv (any platform, Python 3.10+)
 
 ```bash
-pip install yt-transcribe
+pipx install yt-transcribe
 # or
 uv tool install yt-transcribe
 ```
