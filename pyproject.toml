@@ -1,0 +1,26 @@
+[project]
+name = "yt-transcribe"
+dynamic = ["version"]
+description = "Download and transcribe YouTube videos using yt-dlp and whisper-cpp"
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "pascalweiss", email = "4643156+pascalweiss@users.noreply.github.com" }
+]
+requires-python = ">=3.11"
+dependencies = ["yt-dlp", "click", "rich", "pyyaml", "pywhispercpp"]
+
+[project.scripts]
+yt-transcribe = "yt_transcribe.cli:main"
+
+[tool.hatch.version]
+path = "src/yt_transcribe/__init__.py"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]
