@@ -40,7 +40,7 @@ yt-transcribe --channel "https://www.youtube.com/@CHANNEL" -o ./transcripts --wo
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `-m, --model` | Whisper model name or path to `.bin` file | `base` |
+| `-m, --model` | Whisper model name or path to `.bin` file | `large-v3-turbo` |
 | `--no-gpu` | Disable GPU acceleration (Metal) | off |
 | `-l, --language` | Language code (`en`, `de`, `auto`, ...) | `auto` |
 | `-f, --output-format` | Output format: `txt`, `vtt`, `srt`, `csv`, `json`, `all` | `txt` |
