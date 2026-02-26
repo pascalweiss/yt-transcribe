@@ -48,7 +48,10 @@ yt-transcribe --channel "https://www.youtube.com/@CHANNEL" -o ./transcripts --wo
 | `-k, --keep-audio` | Keep audio file after transcription | off |
 | `-o, --output-dir` | Output directory | `$YT_TRANSCRIBE_OUTPUT_DIR` or `.` |
 | `-c, --channel` | Channel URL for batch mode | |
+| `--tab` | Channel tab: `videos`, `shorts`, `streams` | `videos` |
 | `--min-seconds` | Skip videos shorter than N seconds | `60` |
+| `--after` | Only videos after this date (`YYYY-MM-DD`, approximate) | |
+| `--before` | Only videos before this date (`YYYY-MM-DD`, approximate) | |
 | `--amount` | Max new videos to transcribe (`0` = all) | `0` |
 | `--workers` | Parallel workers for channel mode | `1` |
 | `--version` | Show version and exit | |

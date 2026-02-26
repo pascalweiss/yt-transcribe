@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timezone
 from pathlib import Path
 
 import click
@@ -22,8 +23,11 @@ from yt_transcribe.whisper import get_backend, WhisperError
 @click.option("-k", "--keep-audio", is_flag=True, default=False, help="Keep audio file after transcription.")
 @click.option("-o", "--output-dir", type=click.Path(), default=None, help="Base output directory. [default: $YT_TRANSCRIBE_OUTPUT_DIR or .]")
 @click.option("-c", "--channel", "channel_url", default=None, help="Channel URL (mutually exclusive with positional URL).")
+@click.option("--tab", type=click.Choice(["videos", "shorts", "streams"]), default="videos", show_default=True, help="Channel tab to fetch.")
 @click.option("--min-seconds", type=int, default=60, show_default=True, help="Skip videos shorter than N seconds.")
 @click.option("--amount", type=int, default=0, show_default=True, help="Max new videos to transcribe (0 = all).")
+@click.option("--after", "after_date", default=None, help="Only videos after this date (YYYY-MM-DD, approximate).")
+@click.option("--before", "before_date", default=None, help="Only videos before this date (YYYY-MM-DD, approximate).")
 @click.option("--workers", type=int, default=1, show_default=True, help="Parallel workers for channel mode.")
 def main(
     url: str | None,
@@ -35,8 +39,11 @@ def main(
     keep_audio: bool,
     output_dir: str | None,
     channel_url: str | None,
+    tab: str,
     min_seconds: int,
     amount: int,
+    after_date: str | None,
+    before_date: str | None,
     workers: int,
 ) -> None:
     """Download and transcribe YouTube videos using yt-dlp and whisper-cpp.
@@ -76,7 +83,31 @@ def main(
         use_gpu=not no_gpu,
     )
 
+    # Parse date filters
+    after_ts: int | None = None
+    before_ts: int | None = None
+    if after_date is not None:
+        try:
+            dt = datetime.strptime(after_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        except ValueError:
+            raise click.BadParameter(f"Invalid date format: '{after_date}'. Use YYYY-MM-DD.", param_hint="'--after'")
+        after_ts = int(dt.timestamp())
+    if before_date is not None:
+        try:
+            dt = datetime.strptime(before_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        except ValueError:
+            raise click.BadParameter(f"Invalid date format: '{before_date}'. Use YYYY-MM-DD.", param_hint="'--before'")
+        before_ts = int(dt.timestamp()) + 86400  # include the whole day
+    if after_ts is not None and before_ts is not None and after_ts >= before_ts:
+        raise click.UsageError("--after date must be before --before date.")
+
     if channel_url:
+        if tab == "shorts" and (min_seconds != 60 or after_ts is not None or before_ts is not None):
+            import logging
+            logging.warning(
+                "Shorts don't provide duration/timestamp metadata. "
+                "--min-seconds, --after, and --before filters will be ignored."
+            )
         results = run_channel_mode(
             channel_url=channel_url,
             config=config,
@@ -84,6 +115,9 @@ def main(
             min_seconds=min_seconds,
             amount=amount,
             workers=workers,
+            after_ts=after_ts,
+            before_ts=before_ts,
+            tab=tab,
         )
         if any(not r.success for r in results):
             raise SystemExit(1)

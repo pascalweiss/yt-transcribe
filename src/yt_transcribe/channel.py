@@ -14,11 +14,21 @@ def run_channel_mode(
     min_seconds: int = 60,
     amount: int = 0,
     workers: int = 1,
+    after_ts: int | None = None,
+    before_ts: int | None = None,
+    tab: str = "videos",
 ) -> list[TranscribeResult]:
     """Transcribe videos from a YouTube channel."""
-    log(f"Fetching video list (min duration: {min_seconds}s)...")
+    filter_parts = []
+    if tab != "videos":
+        filter_parts.append(f"tab: {tab}")
+    if tab != "shorts":
+        filter_parts.append(f"min duration: {min_seconds}s")
+    if after_ts is not None or before_ts is not None:
+        filter_parts.append("date filter active")
+    log(f"Fetching video list ({', '.join(filter_parts)})...")
 
-    all_ids = fetch_channel_video_ids(channel_url, min_seconds)
+    all_ids = fetch_channel_video_ids(channel_url, min_seconds, after_ts, before_ts, tab=tab)
 
     if not all_ids:
         log("No videos found.")
