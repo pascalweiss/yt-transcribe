@@ -24,6 +24,7 @@ class VideoMeta:
     id: str
     channel: str
     url: str
+    upload_date: str | None = None
 
 
 class VideoOutputDir:
@@ -45,6 +46,8 @@ class VideoOutputDir:
             "channel": self.meta.channel,
             "url": self.meta.url,
         }
+        if self.meta.upload_date is not None:
+            data["upload_date"] = self.meta.upload_date
         if word_count is not None:
             data["word_count"] = word_count
         if transcribed_at is not None:

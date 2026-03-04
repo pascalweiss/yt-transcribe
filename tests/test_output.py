@@ -3,7 +3,22 @@ from pathlib import Path
 
 import yaml
 
+from yt_transcribe.downloader import _format_upload_date
 from yt_transcribe.output import sanitize, VideoMeta, VideoOutputDir, get_transcribed_ids
+
+
+class TestFormatUploadDate:
+    def test_valid_date(self):
+        assert _format_upload_date("20260215") == "2026-02-15"
+
+    def test_none(self):
+        assert _format_upload_date(None) is None
+
+    def test_empty(self):
+        assert _format_upload_date("") is None
+
+    def test_short(self):
+        assert _format_upload_date("2026") is None
 
 
 class TestSanitize:
@@ -53,16 +68,27 @@ class TestVideoOutputDir:
             assert data["id"] == "xyz"
             assert data["channel"] == "Chan"
             assert data["url"] == "https://example.com"
+            assert "upload_date" not in data
             assert "word_count" not in data
             assert "transcribed_at" not in data
+
+    def test_write_info_with_upload_date(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            meta = VideoMeta(title="Test", id="xyz", channel="Chan", url="https://example.com", upload_date="2026-02-15")
+            out = VideoOutputDir(base, meta)
+            out.write_info()
+            data = yaml.safe_load(out.info_path.read_text())
+            assert data["upload_date"] == "2026-02-15"
 
     def test_write_info_with_stats(self):
         with tempfile.TemporaryDirectory() as tmp:
             base = Path(tmp)
-            meta = VideoMeta(title="Test", id="xyz", channel="Chan", url="https://example.com")
+            meta = VideoMeta(title="Test", id="xyz", channel="Chan", url="https://example.com", upload_date="2026-01-01")
             out = VideoOutputDir(base, meta)
             out.write_info(word_count=500, transcribed_at="2026-01-01T00:00:00Z")
             data = yaml.safe_load(out.info_path.read_text())
+            assert data["upload_date"] == "2026-01-01"
             assert data["word_count"] == 500
             assert data["transcribed_at"] == "2026-01-01T00:00:00Z"
 

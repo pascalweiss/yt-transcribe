@@ -10,6 +10,17 @@ class VideoInfo:
     id: str
     channel: str
     url: str
+    upload_date: str | None = None
+
+
+def _format_upload_date(raw: str | None) -> str | None:
+    """Convert yt-dlp's YYYYMMDD to YYYY-MM-DD. Returns None on bad input."""
+    if not raw or len(raw) != 8:
+        return None
+    try:
+        return f"{raw[:4]}-{raw[4:6]}-{raw[6:8]}"
+    except Exception:
+        return None
 
 
 def fetch_video_info(url: str) -> VideoInfo:
@@ -22,6 +33,7 @@ def fetch_video_info(url: str) -> VideoInfo:
         id=info.get("id", ""),
         channel=info.get("channel", "") or info.get("uploader", ""),
         url=url,
+        upload_date=_format_upload_date(info.get("upload_date")),
     )
 
 

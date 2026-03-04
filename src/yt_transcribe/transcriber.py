@@ -47,7 +47,7 @@ def transcribe_single(
     log(f"{prefix}Processing: \"{info.title}\" ({info.id})", worker=worker_id)
 
     try:
-        meta = VideoMeta(title=info.title, id=info.id, channel=info.channel, url=url)
+        meta = VideoMeta(title=info.title, id=info.id, channel=info.channel, url=url, upload_date=info.upload_date)
         out = VideoOutputDir(config.output_dir, meta)
 
         out.write_info()
